@@ -50,11 +50,12 @@ interface ApiItem {
     operationId: string;
     security?: string[];
     produces?: string[];
+    docShow?: boolean;
     req?: Reqeust;
     res?: Responses;
 }
 
-type travelersApis = ApiItem[]
+type WindApis = ApiItem[]
 
 let swagger = {
     ...swaggerConfigDefalut,
@@ -62,10 +63,10 @@ let swagger = {
 };
 
 interface ManageApis {
-    [key: string]: travelersApis
+    [key: string]: WindApis
 }
 
-interface ManageControllers {
+interface Handles {
     [key: string]: (req: Req, res: Res) => Promise<any>
 }
 
@@ -75,20 +76,19 @@ async function apiManage(
         [key: string]: (req: Req, res: Res, next: NextFunction) => Promise<any>
     },
     apis: ManageApis,
-    controllers: ManageControllers,
-    config: { [key: string]: any },
-    srvs
+    handles: Handles,
+    config: { [key: string]: any }
 ) {
-    verify.apiVerify(apis, controllers);
+    verify.apiVerify(apis, handles); // 验证接口是否重复 处理方法是否重复
     let selfSecurity = security;
     Object.keys(security).forEach(_key => {
         swagger.security.push({ [_key]: [] });
     });
     const { swaggerPath, swaggerConfig, port = "3000" } = config;
     Object.keys(apis).forEach(apiItem => {
-        const items: travelersApis = apis[apiItem];
+        const items = apis[apiItem];
         items.forEach(item => {
-            const { path, method, summary = "默认", tags = [apiItem], security = [], description, operationId, req, res } = item;
+            const { path, method, summary = "默认", tags = [apiItem], security = [], description, operationId, req, res, docShow = true } = item;
             const { query, body, params } = req;
             const resBody = res.body;
 
@@ -171,14 +171,15 @@ async function apiManage(
                 }
 
                 try {
-                    if (controllers[item.operationId]) {
-                        const result = await controllers[item.operationId](req, res);
+                    if (handles[item.operationId]) {
+                        const result = await handles[item.operationId](req, res);
                         if (result) res.json(result);
                     } else {
                         next();
                     }
                 } catch (error) {
-                    res.status(error.code || 500).send(error);
+                    console.log(error);
+                    res.status(error.code || 500).send(error.message);
                 }
 
             });
@@ -190,7 +191,7 @@ async function apiManage(
     swagger = { ...swagger, ...swaggerConfig };
     app.use(swaggerPath, express.static(path.join(__dirname, "../../swagger")));
 
-    srvs.logger.info(`document you can click: http://127.0.0.1${port == 80 ? "" : `:${port}`}${swaggerPath}`);
+    console.info(`document you can click: http://127.0.0.1${port == 80 ? "" : `:${port}`}${swaggerPath}`);
 
     app.get(`${swaggerPath}/json`, (req, res, next) => {
         res.send(swagger);
@@ -200,4 +201,4 @@ async function apiManage(
 }
 
 
-export { SwaggerConfig, apiManage, travelersApis, swagger, ManageApis, ManageControllers };
+export { SwaggerConfig, apiManage, WindApis, swagger, ManageApis, Handles };

@@ -1,12 +1,12 @@
 
 
-import { ManageApis, ManageControllers, travelersApis } from "./api";
+import { ManageApis, Handles, WindApis } from "./api";
 
-export function apiVerify(apis: ManageApis, controllers: ManageControllers) {
+export function apiVerify(apis: ManageApis, controllers: Handles) {
     let verifyPath = {};
     let verifyOperationId = {};
     Object.keys(apis).forEach(apiItem => {
-        const items: travelersApis = apis[apiItem];
+        const items = apis[apiItem];
         items.forEach(item => {
             const { path, method, operationId } = item;
             if (!verifyPath[path]) {
@@ -15,7 +15,7 @@ export function apiVerify(apis: ManageApis, controllers: ManageControllers) {
             if (!verifyPath[path][method]) {
                 verifyPath[path][method] = operationId;
             } else {
-                throw `apis path and method: ${path},${method} already exist`;
+                throw `路径==>${path}的请求方法${method} 已经存在`;
             }
         });
     });
@@ -24,9 +24,9 @@ export function apiVerify(apis: ManageApis, controllers: ManageControllers) {
         if (!verifyOperationId[data]) {
             verifyOperationId[data] = controllers[data];
         } else {
-            throw `controllers operationId:${data} already exist`;
+            throw `逻辑处理方法${data} already exist`;
         }
     });
 
-    
+
 }

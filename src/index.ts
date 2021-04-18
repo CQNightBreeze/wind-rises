@@ -1,9 +1,7 @@
-import { apiManage, travelersApis, swagger } from "./lib/api";
+import { apiManage, WindApis, swagger } from "./lib/api";
 import { srvsCode, Code } from "./lib/code";
 import { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler } from "express";
 import * as express from "express";
-import { srvsLogger, Logger } from "./lib/logger";
-
 
 declare global {
     namespace Travelers {
@@ -13,12 +11,8 @@ declare global {
     }
 }
 
-interface Srvs extends Travelers.Srvs {
-
-}
 
 interface Req extends Request {
-    srvs: Travelers.Srvs
 }
 
 interface Res extends Response {
@@ -26,52 +20,48 @@ interface Res extends Response {
 }
 
 
-interface TravelersOption {
+interface WindOption {
     config: { [key: string]: any },
     before?: (app: Express) => void,
     security: {
         [key: string]: (req: Req, res: Res, next: NextFunction) => Promise<any>
     },
     apis: {
-        [key: string]: travelersApis
+        [key: string]: WindApis
     },
-    controllers: {
+    handles: {
         [key: string]: (req: Req, res: Res) => Promise<any>
     }
-    srvs?: { [key: string]: any },
-    ready?: (app: Express, srvs: Travelers.Srvs) => void,
-    after?: (app: Express, srvs: Travelers.Srvs) => void
+    after?: (app: Express) => void
 }
 
 
 
-export async function travelers(option: TravelersOption) {
+async function wind(option: WindOption) {
     const app = express();
-    let { config, before, security = {}, apis, controllers, ready, after, srvs } = option;
+    let { config, before, security = {}, apis, handles, after } = option;
     const { host = "0.0.0.0", port = 3000 } = config;
-    srvs.$config = config;
-    srvs = srvsCode(srvs);
-    srvs = srvsLogger(srvs);
 
     if (before) before(app);
+
+    // 解析body
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
+
     app.use((req: Request, res: Response, next: NextFunction) => {
-        req["srvs"] = srvs;
         next();
     });
 
-    if (ready) ready(app, srvs);
-    await apiManage(app, security, apis, controllers, config, srvs);
-    if (after) after(app, srvs);
+    await apiManage(app, security, apis, handles, config);
+    if (after) after(app);
 
     app.listen(port, `${host}`);
 
-    srvs.logger.info(`travelers start host:${host} prot:${port}`);
+    console.info(`wind-rises start host:${host} prot:${port}`);
 
-    return { swagger, srvs };
+    return { swagger };
 }
 
 
-export { Req, Res, NextFunction, RequestHandler, Express, ErrorRequestHandler, TravelersOption, Code, Srvs, Logger, travelersApis };
+export { Req, Res, NextFunction, RequestHandler, Express, ErrorRequestHandler, WindOption, Code, WindApis, wind };
 
