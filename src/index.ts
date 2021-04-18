@@ -1,5 +1,4 @@
 import { apiManage, WindApis, swagger } from "./lib/api";
-import { srvsCode, Code } from "./lib/code";
 import { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler } from "express";
 import * as express from "express";
 
@@ -63,5 +62,5 @@ async function wind(option: WindOption) {
 }
 
 
-export { Req, Res, NextFunction, RequestHandler, Express, ErrorRequestHandler, WindOption, Code, WindApis, wind };
+export { Req, Res, NextFunction, RequestHandler, Express, ErrorRequestHandler, WindOption, WindApis, wind };
 
