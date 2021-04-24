@@ -13,7 +13,10 @@ export function apiVerify(apis: ManageApis, controllers: Handles) {
                 verifyPath[path] = {};
             }
             if (!verifyPath[path][method]) {
-                verifyPath[path][method] = operationId;
+                // verifyPath[path][method] = operationId;
+                if (!controllers[operationId]) {
+                    throw `路径==>${path}的请求方法${method} operationId"${operationId} 不存在`;
+                }
             } else {
                 throw `路径==>${path}的请求方法${method} 已经存在`;
             }

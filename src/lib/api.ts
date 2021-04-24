@@ -7,6 +7,7 @@ import * as express from "express";
 import { Req, Res, Express, NextFunction } from "../index";
 import * as verify from "./verify";
 import * as fs from "fs";
+import { type } from "node:os";
 
 const swaggerConfigDefalut = {
     swagger: "2.0",
@@ -41,9 +42,11 @@ interface Responses {
     body?: joi.Schema;
 }
 
+type Method = "get" | "post" | "put" | "delete" | "GET" | "POST" | "PUT" | "DELETE"
+
 interface ApiItem {
     path: string;
-    method: string;
+    method: Method;
     summary?: string;
     description?: string;
     tags?: string[];
@@ -179,7 +182,8 @@ async function apiManage(
                     }
                 } catch (error) {
                     console.log(error);
-                    res.status(error.code || 500).send(error.message);
+                    // res.status(error.code || 500).send(error.message);
+                    throw error;
                 }
 
             });

@@ -3,15 +3,20 @@ import { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestH
 import * as express from "express";
 
 declare global {
-    namespace Travelers {
-        interface Srvs {
-            [k: string]: any;
+    namespace Wind {
+        interface Auth {
+
+        }
+        interface MAuth {
+
         }
     }
 }
 
 
 interface Req extends Request {
+    auth: Wind.Auth
+    mauth: Wind.MAuth
 }
 
 interface Res extends Response {
