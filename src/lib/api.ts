@@ -195,7 +195,7 @@ async function apiManage(
     swagger = { ...swagger, ...swaggerConfig };
     app.use(swaggerPath, express.static(path.join(__dirname, "../../swagger")));
 
-    console.info(`document you can click: http://127.0.0.1${port == 80 ? "" : `:${port}`}${swaggerPath}`);
+    console.info(`document you can click: http://${swaggerConfig.host}${swaggerPath}`);
 
     app.get(`${swaggerPath}/json`, (req, res, next) => {
         res.send(swagger);
