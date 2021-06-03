@@ -166,7 +166,7 @@ async function apiManage(
                         try {
                             await joi.validate(query[queryKey], _query[queryKey]);
                         } catch (error) {
-                            throw `query:${queryKey} ${error.message}`;
+                            throw `query=>${queryKey} ${error.message}`;
                         }
                     }
                     let paramsKeys = Object.keys(_params);
@@ -174,22 +174,22 @@ async function apiManage(
                         try {
                             await joi.validate(params[paramsKey], _params[paramsKey]);
                         } catch (error) {
-                            throw `params:${paramsKey} ${error.message}`;
+                            throw `params=>${paramsKey} ${error.message}`;
                         }
                     }
                     if (_body) {
                         try {
                             await joi.validate(body, _body);
                         } catch (error) {
-                            throw `body: ${error.message}`;
+                            throw `body=> ${error.message}`;
                         }
                     }
                 } catch (error) {
                     // res.status(400).send(error);
                     if (style == "desire") {
-                        res.send({ code: 400, msg: error.message });
+                        res.send({ code: 400, msg: error });
                     } else {
-                        res.status(400).send({ code: 400, msg: error.message });
+                        res.status(400).send({ code: 400, msg: error });
                     }
                     return;
                 }

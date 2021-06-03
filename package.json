@@ -1,6 +1,6 @@
 {
   "name": "wind-rises",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "I wanna write code like wind",
   "main": "dist/index.js",
   "scripts": {
