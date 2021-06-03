@@ -87,7 +87,7 @@ async function apiManage(
     Object.keys(security).forEach(_key => {
         swagger.security.push({ [_key]: [] });
     });
-    const { swaggerPath, swaggerConfig, port = "3000" } = config;
+    const { swaggerPath, swaggerConfig, port = "3000", style } = config;
     Object.keys(apis).forEach(apiItem => {
         const items = apis[apiItem];
         items.forEach(item => {
@@ -95,53 +95,55 @@ async function apiManage(
             const { query, body, params } = req;
             const resBody = res.body;
 
-            if (!swagger.paths[path]) {
-                swagger.paths[path] = {};
-            }
-            swagger.paths[path][method] = {
-                summary,
-                description,
-                operationId,
-                parameters: [],
-                tags,
-                security,
-                responses: {
-                    "200": {
-                        description: "successful",
-                    }
+            if (docShow) { // 是否显示文档
+                if (!swagger.paths[path]) {
+                    swagger.paths[path] = {};
                 }
-            };
+                swagger.paths[path][method] = {
+                    summary,
+                    description,
+                    operationId,
+                    parameters: [],
+                    tags,
+                    security,
+                    responses: {
+                        "200": {
+                            description: "successful",
+                        }
+                    }
+                };
 
-            if (params) {
-                Object.keys(params).forEach(key => {
-                    const s = convert(params[key]);
-                    s["in"] = "path";
-                    s["name"] = key;
-                    swagger.paths[path][method].parameters.push(s);
-                });
-            }
+                if (params) {
+                    Object.keys(params).forEach(key => {
+                        const s = convert(params[key]);
+                        s["in"] = "path";
+                        s["name"] = key;
+                        swagger.paths[path][method].parameters.push(s);
+                    });
+                }
 
-            if (query) {
-                Object.keys(query).forEach(key => {
-                    const s = convert(query[key]);
-                    s["in"] = "query";
-                    s["name"] = key;
-                    swagger.paths[path][method].parameters.push(s);
-                });
-            }
+                if (query) {
+                    Object.keys(query).forEach(key => {
+                        const s = convert(query[key]);
+                        s["in"] = "query";
+                        s["name"] = key;
+                        swagger.paths[path][method].parameters.push(s);
+                    });
+                }
 
-            if (body) {
-                const s = convert(body);
-                swagger.paths[path][method].parameters.push({
-                    in: "body",
-                    name: "body",
-                    schema: s
-                });
-            }
+                if (body) {
+                    const s = convert(body);
+                    swagger.paths[path][method].parameters.push({
+                        in: "body",
+                        name: "body",
+                        schema: s
+                    });
+                }
 
-            if (resBody) {
-                const s = convert(resBody);
-                swagger.paths[path][method].responses["200"]["schema"] = s;
+                if (resBody) {
+                    const s = convert(resBody);
+                    swagger.paths[path][method].responses["200"]["schema"] = s;
+                }
             }
 
             let koaPath = path.replace(/}/g, "");
@@ -161,15 +163,34 @@ async function apiManage(
                 try {
                     let queryKeys = Object.keys(_query);
                     for (const queryKey of queryKeys) {
-                        await joi.validate(query[queryKey], _query[queryKey]);
+                        try {
+                            await joi.validate(query[queryKey], _query[queryKey]);
+                        } catch (error) {
+                            throw `query:${queryKey} ${error.message}`;
+                        }
                     }
                     let paramsKeys = Object.keys(_params);
                     for (const paramsKey of paramsKeys) {
-                        await joi.validate(params[paramsKey], _params[paramsKey]);
+                        try {
+                            await joi.validate(params[paramsKey], _params[paramsKey]);
+                        } catch (error) {
+                            throw `params:${paramsKey} ${error.message}`;
+                        }
                     }
-                    if (_body) await joi.validate(body, _body);
+                    if (_body) {
+                        try {
+                            await joi.validate(body, _body);
+                        } catch (error) {
+                            throw `body: ${error.message}`;
+                        }
+                    }
                 } catch (error) {
-                    res.status(400).send(error);
+                    // res.status(400).send(error);
+                    if (style == "desire") {
+                        res.send({ code: 400, msg: error.message });
+                    } else {
+                        res.status(400).send({ code: 400, msg: error.message });
+                    }
                     return;
                 }
 
