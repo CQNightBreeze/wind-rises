@@ -87,7 +87,7 @@ async function apiManage(
     Object.keys(security).forEach(_key => {
         swagger.security.push({ [_key]: [] });
     });
-    const { swaggerPath, swaggerConfig, port = "3000", style } = config;
+    const { swaggerPath, swaggerConfig, port = "3000" } = config;
     Object.keys(apis).forEach(apiItem => {
         const items = apis[apiItem];
         items.forEach(item => {
@@ -166,7 +166,7 @@ async function apiManage(
                         try {
                             await joi.validate(query[queryKey], _query[queryKey]);
                         } catch (error) {
-                            throw `query=>${queryKey} ${error.message}`;
+                            throw `query verify fail, ${queryKey} ${error.message}`;
                         }
                     }
                     let paramsKeys = Object.keys(_params);
@@ -174,23 +174,18 @@ async function apiManage(
                         try {
                             await joi.validate(params[paramsKey], _params[paramsKey]);
                         } catch (error) {
-                            throw `params=>${paramsKey} ${error.message}`;
+                            throw `params verify fail, ${paramsKey} ${error.message}`;
                         }
                     }
                     if (_body) {
                         try {
                             await joi.validate(body, _body);
                         } catch (error) {
-                            throw `body=> ${error.message}`;
+                            throw `body verify fail, ${error.message}`;
                         }
                     }
                 } catch (error) {
-                    // res.status(400).send(error);
-                    if (style == "desire") {
-                        res.send({ code: 400, msg: error });
-                    } else {
-                        res.status(400).send({ code: 400, msg: error });
-                    }
+                    res.send({ code: 400, msg: error });
                     return;
                 }
 
